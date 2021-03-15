@@ -3,6 +3,7 @@ var router = express.Router();
 const Template = require('..\\db\\model.js').Template;
 const Tasks = require('..\\db\\model.js').Tasks;
 const Times = require('..\\db\\model.js').Times;
+const Towns = require('..\\db\\model.js').Towns;
 
 router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });
@@ -76,6 +77,33 @@ router.post('/getAllTemplates', function (req, res, next) {
         res.json({
           status: 0,
           result: tasks
+        })
+      }
+      catch (err) {
+        res.json({
+          status: -1,
+          result: err
+        })
+      }
+    })()
+  }
+  catch {
+    res.json({
+      status: -1,
+      result: 'server error'
+    })
+  }
+});
+
+router.post('/getAllTowns', function (req, res, next) {
+  try {
+    (async () => {
+      try {
+        let towns = await (Towns.getAllTowns())
+        //console.log(tasks)
+        res.json({
+          status: 0,
+          result: towns
         })
       }
       catch (err) {
@@ -196,7 +224,7 @@ router.post('/controllTask', function (req, res, next) {
             break
           case 'save':
             //console.log(`id = ${currentTask.id} desc = ${currentTask.description}`)
-            returnRec = await (Tasks.saveDescription([currentTask.description, currentTask.id]))
+            returnRec = await (Tasks.saveDescription([currentTask.description, currentTask.town_id, currentTask.id]))
             break
         }
 
