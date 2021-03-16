@@ -4,6 +4,7 @@ const Template = require('..\\db\\model.js').Template;
 const Tasks = require('..\\db\\model.js').Tasks;
 const Times = require('..\\db\\model.js').Times;
 const Towns = require('..\\db\\model.js').Towns;
+const Reports = require('..\\db\\model.js').Reports;
 
 router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });
@@ -132,6 +133,35 @@ router.post('/getAllTasks', function (req, res, next) {
         res.json({
           status: 0,
           result: tasks
+        })
+      }
+      catch (err) {
+        res.json({
+          status: -1,
+          result: err
+        })
+      }
+    })()
+  }
+  catch {
+    res.json({
+      status: -1,
+      result: 'server error'
+    })
+  }
+});
+
+router.post('/reportTasksDays', function (req, res, next) {
+
+  const dates = req.body
+  console.log('**')
+  try {
+    (async () => {
+      try {
+        let report = await (Reports.reportTasksDays([dates.reportDateStart, dates.reportDateEnd]))
+        res.json({
+          status: 0,
+          result: report
         })
       }
       catch (err) {

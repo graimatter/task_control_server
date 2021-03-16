@@ -183,8 +183,29 @@ class Towns {
     }
 }
 
+class Reports {
+    
+    static reportTasksDays(data) {
+        const sql = `   select  t2.TEMPLATE_TITLE as template_title, 
+                                t4.TOWN_TITLE as town_title, 
+                                t1.DESCRIPTION as description, 
+                                min(t3.DATESTART) as datestart, 
+                                sum((strftime('%s',t3.DATEEND) - strftime('%s',t3.DATESTART))) as duration
+                        from TASKS as t1
+                        join TASKS_TEMPLATES as t2 on t2.TEMPLATE_ID = t1.TEMPLATE_ID
+                        join TIMES as t3 on t3.TASKID = t1.ID
+                        join TOWNS as t4 on t1.TOWN_ID = t4.ID
+                        where t3.DATESTART between ? and ?
+                        group by t2.TEMPLATE_ID, t2.TEMPLATE_TITLE, t4.TOWN_TITLE, t1.DESCRIPTION
+                        order by datestart`
+        return selectAll(sql, data)
+
+    }
+}
+
 module.exports = db
 module.exports.Template = Template
 module.exports.Tasks = Tasks
 module.exports.Times = Times
 module.exports.Towns = Towns
+module.exports.Reports = Reports
