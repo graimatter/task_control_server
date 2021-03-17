@@ -154,7 +154,6 @@ router.post('/getAllTasks', function (req, res, next) {
 router.post('/reportTasksDays', function (req, res, next) {
 
   const dates = req.body
-  console.log('**')
   try {
     (async () => {
       try {

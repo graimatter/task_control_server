@@ -110,7 +110,7 @@ class Tasks {
                                 sum((strftime('%s',t3.DATEEND) - strftime('%s',t3.DATESTART))) as duration,
                                 t1.STATUS as status,
                                 t1.DESCRIPTION as description,
-                                t1.TOWN_ID as town_id,
+                                ifnull(t1.TOWN_ID,-1) as town_id,
                                 t4.TOWN_TITLE as town_title
                         from TASKS as t1
                         join TASKS_TEMPLATES as t2 on t1.TEMPLATE_ID = t2.TEMPLATE_ID
@@ -118,7 +118,7 @@ class Tasks {
                         left join TOWNS as t4 on t1.TOWN_ID = t4.ID
                         where t2.ACTIVE = 1 and date(t3.DATESTART) = date(?)
                         group by t1.ID, t2.TEMPLATE_ID, t2.TEMPLATE_TITLE
-                        ORDER BY t1.STATUS desc, t3.DATESTART`
+                        ORDER BY t1.STATUS desc, t3.DATESTART desc`
         return selectAll(sql, data)
     }
 
@@ -187,16 +187,16 @@ class Reports {
     
     static reportTasksDays(data) {
         const sql = `   select  t2.TEMPLATE_TITLE as template_title, 
-                                t4.TOWN_TITLE as town_title, 
+                                ifnull(t4.TOWN_TITLE,'') as town_title, 
                                 t1.DESCRIPTION as description, 
                                 min(t3.DATESTART) as datestart, 
                                 sum((strftime('%s',t3.DATEEND) - strftime('%s',t3.DATESTART))) as duration
                         from TASKS as t1
                         join TASKS_TEMPLATES as t2 on t2.TEMPLATE_ID = t1.TEMPLATE_ID
                         join TIMES as t3 on t3.TASKID = t1.ID
-                        join TOWNS as t4 on t1.TOWN_ID = t4.ID
+                        left join TOWNS as t4 on t1.TOWN_ID = t4.ID
                         where t3.DATESTART between ? and ?
-                        group by t2.TEMPLATE_ID, t2.TEMPLATE_TITLE, t4.TOWN_TITLE, t1.DESCRIPTION
+                        group by t2.TEMPLATE_ID, t2.TEMPLATE_TITLE, t1.ID, t4.TOWN_TITLE, t1.DESCRIPTION
                         order by datestart`
         return selectAll(sql, data)
 
