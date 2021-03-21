@@ -10,6 +10,32 @@ router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+router.post('/login', function (req, res, next) {
+  
+  
+  //check the user here
+})
+
+router.post('/logout', function (req, res, next) {
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        res.json({
+          status: -1,
+          result: 'destroying session error'
+        })
+      } else {
+        res.json({
+          status: 0,
+          result: 'logout successfull'
+        })
+      }
+    });
+  } else {
+    res.end()
+  }
+})
+
 router.post('/createTemplate', function (req, res, next) {
 
   const newTemplate = req.body

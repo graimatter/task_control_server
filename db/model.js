@@ -7,10 +7,14 @@ db.serialize(() => {
     const createTasks = 'CREATE TABLE IF NOT EXISTS TASKS (ID integer primary key, TEMPLATE_ID integer, STATUS integer, DESCRIPTION text, TOWN_ID integer)'
     const createTimes = 'CREATE TABLE IF NOT EXISTS TIMES (ID integer primary key, TASKID integer, DATESTART text, DATEEND text)'
     const createTowns = 'CREATE TABLE IF NOT EXISTS TOWNS (ID integer primary key, TOWN_TITLE text, ISFILIAL integer)'
+    const createUsers = 'CREATE TABLE IF NOT EXISTS USERS (ID integer primary key, FIO text, USERNAME text, PASSWORD text, ROLE integer)'
+    const createSessions = 'CREATE TABLE IF NOT EXISTS SESSIONS (ID integer primary key, USERID integer, SESSIONID text)'
     db.run(createTemplate)
     db.run(createTasks)
     db.run(createTimes)
     db.run(createTowns)
+    db.run(createUsers)
+    db.run(createSessions)
 })
 
 const getRecord = (sql, data) => {
@@ -18,7 +22,7 @@ const getRecord = (sql, data) => {
         db.get(sql, ...data, function (err, row) {
             if (err)
                 reject(err.message)
-            else{
+            else {
                 resolve(row)
             }
 
@@ -68,12 +72,36 @@ const selectAll = (sql, data) => {
         db.all(sql, ...data, (err, rows) => {
             if (err)
                 reject(err.message)
-            else{
+            else {
                 //rows.forEach(item => console.log(item))
                 resolve(rows)
             }
         })
     })
+}
+
+class Users {
+
+    static findUserByNAme(data) {
+        const sql = `select ID from USERS where USERNAME = ? `
+        return getRecord(sql, data)
+    }
+
+    static getHashUser(data) {
+        console.log('3')
+        console.log(data)
+        const sql = `select PASSWORD from USERS where USERNAME = ? and ROLE > 0`
+        return getRecord(sql, data)
+    }
+
+    static createUser(data) {
+        const sql = `insert into USERS (FIO, USERNAME, PASSWORD, ROLE) values (?, ?, ?, -1)`
+        return createNewRecord(sql, data)
+    }
+}
+
+class Sessions {
+
 }
 
 class Template {
@@ -156,7 +184,7 @@ class Tasks {
 
 class Times {
 
-    static create(data){
+    static create(data) {
         const sql = `INSERT INTO TIMES (TASKID, DATESTART) VALUES (?,?)`
         return createNewRecord(sql, data)
     }
@@ -166,7 +194,7 @@ class Times {
         return updateById(sql, data)
     }
 
-    static getTaskDuration(data){
+    static getTaskDuration(data) {
         const sql = `select sum((strftime('%s',DATEEND) - strftime('%s',DATESTART))) as duration 
                     from TIMES 
                     where TASKID = ?`
@@ -176,7 +204,7 @@ class Times {
 }
 
 class Towns {
-    
+
     static getAllTowns() {
         const sql = `select ID as id, TOWN_TITLE as town_title, ISFILIAL as isfilial from TOWNS`
         return selectAll(sql, [])
@@ -184,7 +212,7 @@ class Towns {
 }
 
 class Reports {
-    
+
     static reportTasksDays(data) {
         const sql = `   select  t2.TEMPLATE_TITLE as template_title, 
                                 ifnull(t4.TOWN_TITLE,'') as town_title, 
@@ -209,3 +237,5 @@ module.exports.Tasks = Tasks
 module.exports.Times = Times
 module.exports.Towns = Towns
 module.exports.Reports = Reports
+module.exports.Users = Users
+module.exports.Sessions = Sessions
