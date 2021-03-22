@@ -39,95 +39,21 @@ app.use(session(sess));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(function (req, res, next) {
-  //console.log(req.sessionID)
+  console.log(req.session.userID)
   //console.log(req.path)
   if (!req.session.user) {
-
+    //console.log(req.headers.authorization)
     if (req.path === '/registration') {
-      let data = req.body
-      console.log(data.userpass)
-      let auth_stuff = new Buffer.from(data.userpass, 'base64')
-
-      let loginpass = auth_stuff.toString().split(":")
-
-      try {
-
-        (async () => {
-          try {
-            console.log(data)
-            const user = await (Users.findUserByNAme([loginpass[0]]))
-            if (user !== undefined) {
-              return res.json({
-                status: -1,
-                result: 'Пользователь с таким именем уже существует'
-              })
-            }
-            else {
-              const userId = (Users.createUser([data.fio, loginpass[0], loginpass[1]]))
-
-              //req.session.user = userId
-              return res.json({
-                status: 0,
-                result: 'Регисрация прошла успешно'
-              })
-
-            }
-          }
-          catch (err) {
-            console.log(err)
-            return res.json({
-              status: -1,
-              result: err
-            })
-          }
-        })()
-      }
-      catch (err) {
-        console.log(err)
-        return res.json({
-          status: -1,
-          result: err
-        })
-      }
-
+      return next() 
     }
-
-    else if (!req.headers.authorization) {
+    if (!req.headers.authorization) {
       return res.json({
         status: -2,
         result: 'need autorization'
       })
     }
-
     else if (req.path === '/login') {
-      let auth_stuff = new Buffer.from(req.headers.authorization.split(" ")[1], 'base64')
-      let loginpass = auth_stuff.toString().split(":")
-
-      try {
-
-        (async () => {
-          try {
-            const user = await (Users.getHashUser([loginpass[0]]))
-            const match = await bcrypt.compare(loginpass[1], user.PASSWORD);
-            if (match) {
-              req.session.user = loginpass[0]
-              return res.status(200).send(req.session.user)
-            }
-            else {
-              return res.status(401).json({
-                status: -2,
-                result: 'need autorization'
-              })
-            }
-          }
-          catch (err) {
-            console.log(err)
-          }
-        })()
-      }
-      catch (err) {
-        console.log(err)
-      }
+      return next()
     }
   }
   else next()

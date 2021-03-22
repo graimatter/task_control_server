@@ -4,7 +4,7 @@ const dbName = 'servicedesk.sqlite'
 const db = new sqlite3.Database(__dirname + dbName);
 db.serialize(() => {
     const createTemplate = 'CREATE TABLE IF NOT EXISTS TASKS_TEMPLATES (TEMPLATE_ID integer primary key, TEMPLATE_TITLE text, ACTIVE integer)'
-    const createTasks = 'CREATE TABLE IF NOT EXISTS TASKS (ID integer primary key, TEMPLATE_ID integer, STATUS integer, DESCRIPTION text, TOWN_ID integer)'
+    const createTasks = 'CREATE TABLE IF NOT EXISTS TASKS (ID integer primary key, TEMPLATE_ID integer, STATUS integer, DESCRIPTION text, TOWN_ID integer, USER_ID)'
     const createTimes = 'CREATE TABLE IF NOT EXISTS TIMES (ID integer primary key, TASKID integer, DATESTART text, DATEEND text)'
     const createTowns = 'CREATE TABLE IF NOT EXISTS TOWNS (ID integer primary key, TOWN_TITLE text, ISFILIAL integer)'
     const createUsers = 'CREATE TABLE IF NOT EXISTS USERS (ID integer primary key, FIO text, USERNAME text, PASSWORD text, ROLE integer)'
@@ -42,9 +42,9 @@ const updateById = (sql, data) => {
     })
 }
 
-const runSQL = (sql) => {
+const runSQL = (sql ,data) => {
     return new Promise((resolve, reject) => {
-        db.run(sql, function (err) {
+        db.run(sql, ...data, function (err) {
             if (err)
                 reject(err.message)
             else
@@ -66,14 +66,12 @@ const createNewRecord = (sql, data) => {
     })
 }
 
-const selectAll = (sql, data) => {
-    //console.log(`1 ${data}`)
+const selectAll = (sql, data) => {   
     return new Promise((resolve, reject) => {
         db.all(sql, ...data, (err, rows) => {
             if (err)
                 reject(err.message)
             else {
-                //rows.forEach(item => console.log(item))
                 resolve(rows)
             }
         })
@@ -82,15 +80,13 @@ const selectAll = (sql, data) => {
 
 class Users {
 
-    static findUserByNAme(data) {
+    static findUserByName(data) {
         const sql = `select ID from USERS where USERNAME = ? `
         return getRecord(sql, data)
     }
 
     static getHashUser(data) {
-        console.log('3')
-        console.log(data)
-        const sql = `select PASSWORD from USERS where USERNAME = ? and ROLE > 0`
+        const sql = `select ID, PASSWORD from USERS where USERNAME = ? and ROLE > 0`
         return getRecord(sql, data)
     }
 
@@ -127,7 +123,7 @@ class Template {
 class Tasks {
 
     static create(data) {
-        const sql = `insert into TASKS (TEMPLATE_ID, STATUS, DESCRIPTION) values (?, 2, '')`
+        const sql = `insert into TASKS (TEMPLATE_ID, STATUS, DESCRIPTION, USER_ID) values (?, 2, '', ?)`
         return createNewRecord(sql, data)
     }
 
@@ -144,7 +140,7 @@ class Tasks {
                         join TASKS_TEMPLATES as t2 on t1.TEMPLATE_ID = t2.TEMPLATE_ID
                         join TIMES as t3 on t3.TASKID = t1.ID
                         left join TOWNS as t4 on t1.TOWN_ID = t4.ID
-                        where t2.ACTIVE = 1 and date(t3.DATESTART) = date(?)
+                        where t2.ACTIVE = 1 and date(t3.DATESTART) = date(?) and USER_ID = ?
                         group by t1.ID, t2.TEMPLATE_ID, t2.TEMPLATE_TITLE
                         ORDER BY t1.STATUS desc, t3.DATESTART desc`
         return selectAll(sql, data)
@@ -160,14 +156,14 @@ class Tasks {
         return updateById(sql, data)
     }
 
-    static getCurrectActiveTask() {
-        const sql = 'select ID from TASKS where STATUS = 2'
-        return getRecord(sql, [])
+    static getCurrectActiveTask(data) {
+        const sql = 'select ID from TASKS where STATUS = 2 and USER_ID = ?'
+        return getRecord(sql, data)
     }
 
-    static pauseCurrentAcive() {
-        const sql = `update TASKS set STATUS = 1 where STATUS = 2`
-        return runSQL(sql)
+    static pauseCurrentAcive(data) {
+        const sql = `update TASKS set STATUS = 1 where STATUS = 2 and USER_ID = ?`
+        return runSQL(sql, data)
     }
 
     static closeById(data) {
@@ -190,7 +186,7 @@ class Times {
     }
 
     static close(data) {
-        const sql = `update TIMES set DATEEND = ? where DATEEND is null`
+        const sql = `update TIMES set DATEEND = ? where DATEEND is null and TASKID = ?`
         return updateById(sql, data)
     }
 
@@ -223,7 +219,7 @@ class Reports {
                         join TASKS_TEMPLATES as t2 on t2.TEMPLATE_ID = t1.TEMPLATE_ID
                         join TIMES as t3 on t3.TASKID = t1.ID
                         left join TOWNS as t4 on t1.TOWN_ID = t4.ID
-                        where t3.DATESTART between ? and ?
+                        where t3.DATESTART between ? and ? and t1.USER_ID = ?
                         group by t2.TEMPLATE_ID, t2.TEMPLATE_TITLE, t1.ID, t4.TOWN_TITLE, t1.DESCRIPTION
                         order by datestart`
         return selectAll(sql, data)
