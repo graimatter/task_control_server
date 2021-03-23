@@ -99,15 +99,9 @@ router.post('/logout', function (req, res, next) {
   if (req.session) {
     req.session.destroy(err => {
       if (err) {
-        res.json({
-          status: -1,
-          result: 'destroying session error'
-        })
+        return res.status(500).json(returnManualResult(100, 'ошибка удаления сессии'))
       } else {
-        res.json({
-          status: 0,
-          result: 'logout successfull'
-        })
+        return res.status(200).json(returnManualResult(0, 'logout успешно'))
       }
     });
   } else {
@@ -122,25 +116,19 @@ router.post('/createTemplate', function (req, res, next) {
     (async () => {
       try {
         let templateId = await (Template.create([newTemplate.title]))
-        res.json({
+        return res.status(200).json(returnManualResult(0, templateId))
+        /*res.json({
           status: 0,
           result: templateId
-        })
+        })*/
       }
       catch (err) {
-        console.log(`**** ${err} ****`)
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -152,25 +140,19 @@ router.post('/deleteTemplate', function (req, res, next) {
     (async () => {
       try {
         let changes = await (Template.disactivateTask([templateId]))
-        res.json({
+        return res.status(200).json(returnManualResult(0, changes))
+        /*res.json({
           status: 0,
           result: changes
-        })
+        })*/
       }
       catch (err) {
-        console.log(`**** ${err} ****`)
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -180,24 +162,19 @@ router.post('/getAllTemplates', function (req, res, next) {
       try {
         let tasks = await (Template.getAllTemplates())
         //console.log(tasks)
-        res.json({
+        return res.status(200).json(returnManualResult(0, tasks))
+        /*res.json({
           status: 0,
           result: tasks
-        })
+        })*/
       }
       catch (err) {
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -207,24 +184,19 @@ router.post('/getAllTowns', function (req, res, next) {
       try {
         let towns = await (Towns.getAllTowns())
         //console.log(tasks)
-        res.json({
+        return res.status(200).json(returnManualResult(0, towns))
+        /*res.json({
           status: 0,
           result: towns
-        })
+        })*/
       }
       catch (err) {
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -235,24 +207,19 @@ router.post('/getAllTasks', function (req, res, next) {
     (async () => {
       try {
         let tasks = await (Tasks.getAllTasks([curDate, req.session.userID]))
-        res.json({
+        return res.status(200).json(returnManualResult(0, tasks))
+        /*res.json({
           status: 0,
           result: tasks
-        })
+        })*/
       }
       catch (err) {
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -263,24 +230,19 @@ router.post('/reportTasksDays', function (req, res, next) {
     (async () => {
       try {
         let report = await (Reports.reportTasksDays([dates.reportDateStart, dates.reportDateEnd, req.session.userID]))
-        res.json({
+        return res.status(200).json(returnManualResult(0, report))
+        /*res.json({
           status: 0,
           result: report
-        })
+        })*/
       }
       catch (err) {
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -315,19 +277,12 @@ router.post('/createNewTask', function (req, res, next) {
         })
       }
       catch (err) {
-        console.log(`**** ${err} ****`)
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
@@ -373,7 +328,7 @@ router.post('/controllTask', function (req, res, next) {
             break
         }
 
-        console.log(returnRec.duration)
+        //console.log(returnRec.duration)
         res.json({
           status: 0,
           result: changedTaskId,
@@ -381,19 +336,12 @@ router.post('/controllTask', function (req, res, next) {
         })
       }
       catch (err) {
-        console.log(`**** ${err} ****`)
-        res.json({
-          status: -1,
-          result: err
-        })
+        return res.status(500).json(returnManualResult(100, err))
       }
     })()
   }
   catch {
-    res.json({
-      status: -1,
-      result: 'server error'
-    })
+    return res.status(500).json(returnManualResult(100, err))
   }
 });
 
