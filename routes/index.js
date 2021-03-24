@@ -1,5 +1,6 @@
 var express = require('express');
 var session = require('express-session');
+const path = require('path');
 var router = express.Router();
 const Template = require('..\\db\\model.js').Template;
 const Tasks = require('..\\db\\model.js').Tasks;
@@ -33,6 +34,10 @@ const returnManualResult = (code, res) => {
   }
 
 }
+
+/*router.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});*/
 
 router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });

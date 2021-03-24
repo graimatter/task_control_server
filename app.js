@@ -23,14 +23,22 @@ var sess = {
   cookie: {}
 }
 
+const setCors = (req, callback) => {
+  let corsOptions;
+  corsOptions = {
+    origin : req.header('Origin'),
+    credentials : true
+  }
+  callback(null, corsOptions)
+}
+
 // view engine setup
+app.use(express.static(path.join(__dirname, 'build')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}))
+app.use(cors(setCors))
+
 
 app.use(logger('dev'));
 //app.use(express.json());
@@ -38,26 +46,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-/*app.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
-  res.setHeader('credentials', 'true')
-  next()
-})
-
-/**/
-
 app.use(session(sess));
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+
+
 app.use(function (req, res, next) {
-  //console.log(req.session.userID)
-  //console.log(req.path)
-  //console.log(req.headers)
-  //res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  
   if (!req.session.user) {
-    //console.log(req.headers.authorization)
-    if (req.path === '/registration') {
-      return next() 
+
+    if (req.path === '/registration') { // || '/' || req.method === 'GET') {
+      return next()
     }
     if (!req.headers.authorization) {
       return res.json({
