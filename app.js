@@ -56,7 +56,7 @@ app.use(function (req, res, next) {
   
   if (!req.session.user) {
 
-    if (req.path === '/registration') { // || '/' || req.method === 'GET') {
+    if ((req.path === '/registration')  || ('/' && req.method === 'GET')) {
       return next()
     }
     if (!req.headers.authorization) {

@@ -35,13 +35,13 @@ const returnManualResult = (code, res) => {
 
 }
 
-/*router.get('/', function (req, res) {
+router.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});*/
-
-router.get('/', function (req, res, next) {
-  res.render('index', { title: 'Express' });
 });
+
+/*router.get('/', function (req, res, next) {
+  res.render('index', { title: 'Express' });
+});*/
 
 router.post('/login', function (req, res, next) {
 
@@ -61,7 +61,7 @@ router.post('/login', function (req, res, next) {
         }
         req.session.userID = user.ID
         req.session.user = loginpass[0]
-        return res.status(200).json(returnManualResult(0, user.ID))
+        return res.status(200).json(returnManualResult(0, user.FIO))
       }
       catch (err) {
         return res.status(500).json(returnManualResult(100, err))

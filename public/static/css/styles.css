@@ -1,0 +1,13 @@
+body, html {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    
+}
+
+#root {
+    min-height: 100%;
+    width: 1440px;
+    margin: 0px auto;
+    display: flex;
+}

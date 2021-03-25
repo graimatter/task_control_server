@@ -86,7 +86,7 @@ class Users {
     }
 
     static getHashUser(data) {
-        const sql = `select ID, PASSWORD from USERS where USERNAME = ? and ROLE > 0`
+        const sql = `select ID, PASSWORD, FIO from USERS where USERNAME = ? and ROLE > 0`
         return getRecord(sql, data)
     }
 
