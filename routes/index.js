@@ -86,7 +86,8 @@ router.post('/registration', function (req, res, next) {
             return res.status(401).json(returnManualResult(102))
           }
           const hashed = await bcrypt.hash(loginpass[1], 10)
-          const userId = (Users.createUser([data.fio, loginpass[0], hashed]))
+          const userId = await Users.createUser([data.fio, loginpass[0], hashed])
+          await Template.createUserTamplate([userId])
           return res.status(200).json(returnManualResult(0, userId))
         }
         catch (err) {
@@ -140,11 +141,12 @@ router.post('/createTemplate', function (req, res, next) {
 router.post('/deleteTemplate', function (req, res, next) {
 
   const templateId = req.body.id
+  const active = req.body.active
 
   try {
     (async () => {
       try {
-        let changes = await (Template.disactivateTask([templateId]))
+        let changes = await (Template.disactivateUserTask([active, templateId, req.session.userID]))
         return res.status(200).json(returnManualResult(0, changes))
         /*res.json({
           status: 0,
@@ -165,7 +167,7 @@ router.post('/getAllTemplates', function (req, res, next) {
   try {
     (async () => {
       try {
-        let tasks = await (Template.getAllTemplates())
+        let tasks = await (Template.getAllUserTemplates([req.session.userID]))
         //console.log(tasks)
         return res.status(200).json(returnManualResult(0, tasks))
         /*res.json({

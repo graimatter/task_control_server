@@ -4,6 +4,7 @@ const dbName = 'servicedesk.sqlite'
 const db = new sqlite3.Database(__dirname + dbName);
 db.serialize(() => {
     const createTemplate = 'CREATE TABLE IF NOT EXISTS TASKS_TEMPLATES (TEMPLATE_ID integer primary key, TEMPLATE_TITLE text, ACTIVE integer)'
+    const createUserTemplate = 'CREATE TABLE IF NOT EXISTS USER_TEMPLATES (ID integer primary key, USERID integer, TEMPLATEID integer, ACTIVE integer)'
     const createTasks = 'CREATE TABLE IF NOT EXISTS TASKS (ID integer primary key, TEMPLATE_ID integer, STATUS integer, DESCRIPTION text, TOWN_ID integer, USER_ID)'
     const createTimes = 'CREATE TABLE IF NOT EXISTS TIMES (ID integer primary key, TASKID integer, DATESTART text, DATEEND text)'
     const createTowns = 'CREATE TABLE IF NOT EXISTS TOWNS (ID integer primary key, TOWN_TITLE text, ISFILIAL integer)'
@@ -15,6 +16,7 @@ db.serialize(() => {
     db.run(createTowns)
     db.run(createUsers)
     db.run(createSessions)
+    db.run(createUserTemplate)
 })
 
 const getRecord = (sql, data) => {
@@ -112,9 +114,36 @@ class Template {
         return selectAll(sql, [])
     }
 
+    static getAllUserTemplates(data) {
+        const sql = `   select TEMPLATE_ID as id, TEMPLATE_TITLE as title, ut.ACTIVE as active
+                        from TASKS_TEMPLATES tt
+                        join USER_TEMPLATES ut on tt.TEMPLATE_ID = ut.TEMPLATEID and ut.USERID = ?`
+
+        return selectAll(sql, data)
+    }
+
+    static getActiveUserTemplates(data) {
+        const sql = `   select TEMPLATE_ID as id, TEMPLATE_TITLE as title, ut.ACTIVE as active  
+                        from TASKS_TEMPLATES  tt
+                        join USER_TEMPLATES ut on tt.TEMPLATE_ID = ut.TEMPLATEID and ut.USERID = ? and ut.ACTIVE = 1`
+        return selectAll(sql, data)
+    }
+
     static disactivateTask(data) {
         const sql = `update TASKS_TEMPLATES set ACTIVE = 0 where TEMPLATE_ID = ?`
         return updateById(sql, data)
+    }
+
+    static disactivateUserTask(data) {
+        const sql = `update USER_TEMPLATES set ACTIVE = ? where TEMPLATEID = ? and USERID = ?`
+        return updateById(sql, data)
+    }
+
+    static createUserTamplate(data) {
+        const sql = `   insert into USER_TEMPLATES (USERID, TEMPLATEID, ACTIVE)
+                        select ?, TEMPLATE_ID, 1
+                        from TASKS_TEMPLATES`
+        return runSQL(sql, data)
     }
 
 }
